@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay Salaza Portal</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #090d16 0%, #11102b 50%, #02040a 100%);
+            --glass-bg: rgba(22, 32, 54, 0.55);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --accent-blue: #38bdf8;
+            --accent-neon: #818cf8;
+            --accent-green: #34d399;
+            --accent-crimson: #f43f5e;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            perspective: 1200px;
+        }
+
+        /* 1. INTRO SPLASH ANIMATION */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #020617;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeOutSplash 1s ease 2.5s forwards; /* Reduced duration slightly for developer sanity */
+        }
+
+        .splash-logo {
+            font-size: 90px;
+            color: var(--accent-blue);
+            text-shadow: 0 0 30px rgba(56, 189, 248, 0.7);
+            transform: scale(0.3) rotate(-30deg);
+            animation: popLogo 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s forwards;
+        }
+
+        .splash-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            letter-spacing: 5px;
+            margin-top: 25px;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: slideTitle 1.2s ease 1.3s forwards;
+        }
+
+        @keyframes popLogo {
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes slideTitle {
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOutSplash {
+            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
+        /* AUTH MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .hidden { display: none !important; }
+
+        /* 3D GLASS CARD STYLING */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), 
+                        inset 0 1px 2px rgba(255,255,255,0.1);
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+            margin-bottom: 25px;
+        }
+        .glass-card:hover {
+            transform: translateY(-4px) rotateX(2deg);
+            box-shadow: 0 40px 70px rgba(56, 189, 248, 0.08), inset 0 1px 3px rgba(255,255,255,0.2);
+        }
+
+        .auth-card { width: 100%; max-width: 450px; }
+
+        /* MAIN APP CONTAINER WITH DRAWER DESIGN LAYOUT */
+        #app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* LEFT SIDEBAR / DRAWER NAV */
+        nav.sidebar-drawer {
+            width: 280px;
+            background: rgba(10, 15, 30, 0.75);
+            backdrop-filter: blur(25px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 25px 20px;
+            position: fixed;
+            height: 100vh;
+            z-index: 500;
+        }
+
+        .drawer-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .drawer-logo {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-neon));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+            font-size: 30px;
+            color: #fff;
+        }
+
+        .drawer-brand h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 1.5px;
+            background: linear-gradient(to right, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .drawer-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .drawer-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 14px 18px;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .drawer-btn i {
+            font-size: 18px;
+            width: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .drawer-btn:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .drawer-btn.active {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(129, 140, 248, 0.15));
+            border-color: rgba(56, 189, 248, 0.3);
+            color: var(--accent-blue);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .drawer-btn.active i {
+            transform: scale(1.15);
+        }
+
+        /* MAIN APP VIEWSTREAM */
+        .viewport {
+            flex-grow: 1;
+            margin-left: 280px;
+            padding: 40px 5%;
+            min-height: 100vh;
+        }
+
+        .view-section {
+            animation: fadeInView 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeInView {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* TOP CONTEXT BAR */
+        .context-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+        }
+
+        /* GLOBAL FORM DESIGN Elements */
+        .form-group { margin-bottom: 18px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            background: rgba(10, 15, 30, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 14px;
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+        }
+        input[type="date"]::-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        /* BUTTON ENGINE */
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-neon));
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: 0.5px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.4);
+        }
+        .btn-secondary { background: transparent; border: 1px solid var(--text-muted); color: #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); box-shadow: none; transform: translateY(-1px); }
+        .btn-danger { background: linear-gradient(135deg, var(--accent-crimson), #be123c); }
+        .btn-danger:hover { box-shadow: 0 10px 20px rgba(244, 63, 94, 0.4); }
+        .btn-success { background: linear-gradient(135deg, var(--accent-green), #047857); color: #000; }
+        .btn-success:hover { box-shadow: 0 10px 20px rgba(52, 211, 153, 0.4); }
+
+        /* ADMIN NOTICES & CONTROL BADGES */
+        .admin-badge {
+            background: linear-gradient(135deg, var(--accent-crimson), #be123c);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .admin-controls {
+            background: rgba(244, 63, 94, 0.06);
+            border: 1px dashed var(--accent-crimson);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* BULLETINS */
+        .announcement-box {
+            background: rgba(56, 189, 248, 0.04);
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 0 14px 14px 0;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        /* ISSUE GRID TRACKER & SYSTEM BOARDS */
+        .feed-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        .issue-card {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+        }
+        .issue-img {
+            width: 100%; height: 200px; object-fit: cover;
+            background: #090d16; display: flex; align-items: center;
+            justify-content: center; color: var(--text-muted);
+        }
+        .issue-body { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        
+        /* STATUS SYSTEM REGULATION */
+        .status-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 30px;
+            font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 12px;
+            width: fit-content;
+        }
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        .status-resolved { background: rgba(52, 211, 153, 0.2); color: var(--accent-green); }
+        .status-unavailable { background: rgba(244, 63, 94, 0.2); color: var(--accent-crimson); }
+
+        /* DATA REGISTRATION TABLES */
+        .portal-table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+            background: rgba(10, 15, 30, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+        .portal-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 15px;
+        }
+        .portal-table th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 14px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .portal-table td {
+            padding: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .portal-table tr:last-child td { border: none; }
+
+        /* RECEIPT TERMINAL DESIGN */
+        .receipt-box {
+            background: #ffffff;
+            color: #0b0f19;
+            padding: 25px;
+            border-radius: 12px;
+            font-family: monospace;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.15), 0 15px 30px rgba(0,0,0,0.3);
+            line-height: 1.5;
+        }
+        .receipt-header {
+            text-align: center; border-bottom: 2px dashed #0b0f19;
+            padding-bottom: 12px; margin-bottom: 15px; font-weight: bold;
+        }
+
+        /* RAPID HOTLINES */
+        .hotline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 15px;
+        }
+        .hotline-item {
+            background: rgba(10, 15, 30, 0.4);
+            padding: 16px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-left: 4px solid var(--accent-crimson);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* DIRECTORY SLOTS WITH IMAGES */
+        .officials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 25px;
+        }
+        .official-member {
+            background: rgba(22, 32, 54, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px; padding: 0 0 20px 0; text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .official-avatar {
+            width: 100%; height: 220px; object-fit: cover;
+            border-bottom: 1px solid var(--glass-border);
+            background: #090d16; margin-bottom: 15px;
+        }
+        .official-info { padding: 0 15px; }
+        .official-name { font-weight: 700; font-size: 19px; color: #fff; margin-bottom: 4px; }
+        .official-role { font-size: 14px; color: var(--accent-blue); letter-spacing: 0.5px; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. INITIAL SYSTEM SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-logo"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="splash-title">BARANGAY SALAZA PORTAL</div>
+    </div>
+
+    <!-- 2. SYSTEM GATE ENTRY GATEWAY MODALS -->
+    <div id="auth-modal" class="modal-overlay">
+        <!-- LOGIN VIEW -->
+        <div id="login-card" class="glass-card auth-card">
+            <h2 class="section-title" style="margin-bottom:20px;"><i class="fa-solid fa-lock"></i> Gate Entry Login</h2>
+            <div class="form-group">
+                <label>Username / Resident Code</label>
+                <input type="text" id="login-user" placeholder="Enter Code or 'Salaza'">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="login-pass" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="attemptLogin()" style="width: 100%; justify-content: center;">Access Portal System</button>
+            <div style="margin-top: 20px; text-align: center; font-size: 14px;">
+                <a href="#" onclick="toggleAuthView('signup')" style="color: var(--accent-blue); text-decoration: none; font-weight:600;">New Resident Account Registration</a><br><br>
+                <a href="#" onclick="toggleAuthView('forgot')" style="color: var(--text-muted); text-decoration: none;">Forgot or Reset Password?</a>
+            </div>
+        </div>
+
+        <!-- SIGNUP VIEW -->
+        <div id="signup-card" class="glass-card auth-card hidden">
+            <h2 class="section-title" style="margin-bottom:20px;"><i class="fa-solid fa-user-plus"></i> Account Sign Up</h2>
+            <div class="form-group">
+                <label>Create Username (Use your unique Barangay Salaza Code)</label>
+                <input type="text" id="signup-code" placeholder="e.g. SALAZA-1029-2026">
+            </div>
+            <div class="form-group">
+                <label>Create Password</label>
+                <input type="password" id="signup-pass" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="processSignup()" style="width: 100%; justify-content: center;">Register Profile</button>
+            <p style="margin-top: 20px; text-align: center;"><a href="#" onclick="toggleAuthView('login')" style="color: var(--accent-blue); text-decoration: none;">Return to Login</a></p>
+        </div>
+
+        <!-- FORGOT CREDENTIALS VIEW -->
+        <div id="forgot-card" class="glass-card auth-card hidden">
+            <h2 class="section-title" style="margin-bottom:20px;"><i class="fa-solid fa-key"></i> Password Recovery</h2>
+            <div class="form-group">
+                <label>Enter Registered Username/Code</label>
+                <input type="text" id="forgot-code" placeholder="Your account code">
+            </div>
+            <div class="form-group">
+                <label>Type New Password</label>
+                <input type="password" id="forgot-new-pass" placeholder="••••••••">
+            </div>
+            <button class="btn" onclick="processPasswordReset()" style="width: 100%; justify-content: center;">Override Credentials</button>
+            <p style="margin-top: 20px; text-align: center;"><a href="#" onclick="toggleAuthView('login')" style="color: var(--accent-blue); text-decoration: none;">Cancel</a></p>
+        </div>
+    </div>
+
+
+    <!-- 3. MAIN PORTAL DESKTOP SYSTEM ENVIRONMENT -->
+    <div id="app-container" class="hidden">
+        
+        <!-- CONTROL DRAWER BAR DESIGN -->
+        <nav class="sidebar-drawer">
+            <div class="drawer-brand">
+                <div class="drawer-logo"><i class="fa-solid fa-shield-halved"></i></div>
+                <h1>BARANGAY SALAZA<br><span style="font-size:12px; opacity:0.7;">PORTAL SYSTEM</span></h1>
+            </div>
+
+            <div class="drawer-menu">
+                <button class="drawer-btn active" onclick="switchView('view-bulletin', this)"><i class="fa-solid fa-bullhorn"></i> Bulletins</button>
+                <button class="drawer-btn" onclick="switchView('view-vehicle', this)"><i class="fa-solid fa-truck-ramp-box"></i> Vehicle Dispatch</button>
+                <button class="drawer-btn" onclick="switchView('view-issues', this)"><i class="fa-solid fa-circle-exclamation"></i> Issue Reports</button>
+                <button class="drawer-btn" onclick="switchView('view-clearance', this)"><i class="fa-solid fa-file-invoice"></i> Request Papers</button>
+                <button class="drawer-btn" onclick="switchView('view-hotlines', this)"><i class="fa-solid fa-phone-flip"></i> Emergency Hotlines</button>
+                <button class="drawer-btn" onclick="switchView('view-officials', this)"><i class="fa-solid fa-users-gear"></i> Brgy Officials</button>
+            </div>
+
+            <button class="drawer-btn" onclick="logout()" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top:20px; color: var(--accent-crimson);">
+                <i class="fa-solid fa-sign-out-alt"></i> Exit Portal
+            </button>
+        </nav>
+
+        <!-- DASHBOARD VIEWPORT INTERFACE -->
+        <div class="viewport">
+            
+            <!-- GLOBAL TOP HEADER STATUS PANEL -->
+            <div class="context-bar">
+                <div id="active-view-title" style="font-family: 'Orbitron', sans-serif; font-size: 14px; color: var(--text-muted); letter-spacing:1px;">PANEL SECURE / LIVE CONNECTED</div>
+                <div id="display-user-role" style="font-weight: 600;">Resident Account Space</div>
+            </div>
+
+            <!-- VIEW BLOCK 1: ANNOUNCEMENTS/BULLETINS -->
+            <div id="view-bulletin" class="view-section">
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fa-solid fa-bullhorn"></i> Broadcast Board</h2>
+                    <p style="color:var(--text-muted); margin-bottom: 20px;">Official real-time releases issued directly from the Administrative Office of Barangay Salaza.</p>
+                    
+                    <div id="admin-announcement-panel" class="admin-controls hidden">
+                        <h4 style="color:var(--accent-crimson); margin-bottom:10px;"><i class="fa-solid fa-user-shield"></i> Post Official Broadcast Notice</h4>
+                        <div class="form-group">
+                            <textarea id="new-announcement-text" rows="3" placeholder="Type core announcements text message here..."></textarea>
+                        </div>
+                        <button class="btn btn-danger" onclick="postAnnouncement()">Publish Live Announcement</button>
+                    </div>
+
+                    <div id="announcement-stream">
+                        <div class="announcement-box" id="demo-ann-1">
+                            <strong>⚠️ General Power Lines Maintenance</strong>
+                            <p style="font-size: 15px; color: var(--text-muted); margin-top: 6px;">Salaza Proper will undergo grid upgrades this weekend. Outages are scheduled from 1:00 PM until 4:00 PM.</p>
+                            <button class="btn btn-danger btn-edit-ann hidden" onclick="deleteAnnouncement('demo-ann-1')" style="padding:4px 8px; font-size:11px; margin-top:10px; position:absolute; right:15px; top:5px;"><i class="fa-solid fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW BLOCK EXTRA: VEHICLE APPOINTMENT SCHEDULER -->
+            <div id="view-vehicle" class="view-section hidden">
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fa-solid fa-truck-ramp-box"></i> Emergency & Logistics Vehicle Services</h2>
+                    <p style="color:var(--text-muted); margin-bottom:20px;">Book municipal vehicles for emergency hospital transit, community outreach hauling, or official regional logistics.</p>
+                    
+                    <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 30px;">
+                        <h3 style="font-size:18px; margin-bottom:15px;">Submit Transit Schedule Booking</h3>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <div class="form-group">
+                                <label>Requesting Resident / Contact Person</label>
+                                <input type="text" id="v-req-name" placeholder="Juan Dela Cruz">
+                            </div>
+                            <div class="form-group">
+                                <label>Target Deployment Date Calendar</label>
+                                <input type="date" id="v-req-date">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Choose Service Vehicle Variant</label>
+                            <select id="v-req-type">
+                                <option value="Barangay Ambulance Unit 01">Barangay Ambulance Unit 01</option>
+                                <option value="Multi-Purpose Patrol Truck">Multi-Purpose Patrol Truck</option>
+                                <option value="Logistics Hauler Van">Logistics Hauler Van</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Route Purpose Context</label>
+                            <textarea id="v-req-purpose" rows="2" placeholder="State cargo type or medical destination target details..."></textarea>
+                        </div>
+                        <button class="btn" onclick="submitVehicleAppointment()"><i class="fa-solid fa-calendar-check"></i> Lodge Booking Request</button>
+                    </div>
+
+                    <h3 class="section-title" style="font-size:16px; border:none; color:var(--text-main);">Active Vehicle Dispatch Log Ledger</h3>
+                    <div class="feed-container" id="vehicle-appointments-feed">
+                        <!-- Seeded demo appointment -->
+                        <div class="issue-card" id="demo-vapp-1">
+                            <div class="issue-body">
+                                <span class="status-badge status-pending" id="v-badge-1">Awaiting Fleet Availability Review</span>
+                                <h3>Barangay Ambulance Unit 01</h3>
+                                <p style="font-size:14px; margin:5px 0;"><i class="fa-solid fa-calendar"></i> <strong>Schedule Target:</strong> 2026-07-25</p>
+                                <p style="font-size:14px; margin-bottom:5px;"><i class="fa-solid fa-user"></i> <strong>Requestor:</strong> Pedro Penduko</p>
+                                <p style="font-size:14px; color:var(--text-muted);">Purpose: Medical outpatient checkup transportation support.</p>
+                                
+                                <div class="admin-controls hidden" style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.2); border-style:dashed;">
+                                    <label style="color:#fff; font-weight:bold;">Fleet Dispatch Control:</label>
+                                    <div style="display:flex; gap:5px; margin-top:8px;">
+                                        <button class="btn btn-success" onclick="updateVehicleStatus('demo-vapp-1', 'v-badge-1', 'approved')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-circle-check"></i> Approve Fleet</button>
+                                        <button class="btn btn-danger" onclick="updateVehicleStatus('demo-vapp-1', 'v-badge-1', 'unavailable')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-circle-xmark"></i> Mark Unavailable</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW BLOCK 2: CITIZEN DEFECT INCIDENTS/ISSUES REQUISITIONS -->
+            <div id="view-issues" class="view-section hidden">
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fa-solid fa-circle-exclamation"></i> Citizen Issue Tracker</h2>
+                    <p style="color:var(--text-muted); margin-bottom: 20px;">Submit localized infrastructure breakages like damaged streetlights, missing utilities, or road blockages.</p>
+                    
+                    <div style="background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 30px;">
+                        <h3 style="font-size:18px; margin-bottom:12px;">File New Report File</h3>
+                        <div class="form-group">
+                            <input type="text" id="report-title" placeholder="Problem Topic (e.g., Request repair for flickering street light at Zone 2)">
+                        </div>
+                        <div class="form-group">
+                            <textarea id="report-desc" rows="3" placeholder="Provide extra physical details or situational context..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-camera"></i> Media Upload simulation (Paste public web image URL, or leave blank to auto-generate a 3D generic placeholder graphic)</label>
+                            <input type="text" id="report-img-url" placeholder="Optional external URL link path...">
+                        </div>
+                        <button class="btn" onclick="submitIssue()"><i class="fa-solid fa-paper-plane"></i> Publish Report</button>
+                    </div>
+
+                    <h3 class="section-title" style="font-size:16px; border:none; color:var(--text-main);">Current Public Action Logs</h3>
+                    <div class="feed-container" id="issue-tracker-feed">
+                        
+                        <div class="issue-card" id="demo-issue-1">
+                            <div class="issue-img">
+                                <i class="fa-solid fa-lightbulb" style="font-size: 50px; opacity: 0.3; color:var(--accent-blue);"></i>
+                            </div>
+                            <div class="issue-body">
+                                <span class="status-badge status-pending" id="demo-status-1">Pending Action</span>
+                                <h3 id="txt-title-1">Flickered Street Light - Salaza Entry Rd</h3>
+                                <p id="txt-desc-1" style="font-size: 14px; color: var(--text-muted); margin-top: 6px;">The street light has been shorting out since the storm. Requesting an electrician for safety.</p>
+                                
+                                <div id="admin-action-1" class="admin-controls hidden" style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.2);">
+                                    <label style="color:#fff; font-weight:bold;">Admin Action Controls:</label>
+                                    <div class="form-group" style="margin-top:5px;">
+                                        <input type="text" id="edit-title-1" value="Flickered Street Light - Salaza Entry Rd" style="padding:6px; font-size:13px; margin-bottom:5px;">
+                                        <textarea id="edit-desc-1" style="padding:6px; font-size:13px;" rows="2">The street light has been shorting out since the storm. Requesting an electrician for safety.</textarea>
+                                    </div>
+                                    <div style="display:flex; gap:5px;">
+                                        <button class="btn" onclick="saveIssueEdits('1')" style="padding:6px 12px; font-size:12px;">Save Edits</button>
+                                        <button class="btn btn-secondary" onclick="resolveIssue('demo-status-1', 'admin-action-1')" style="padding:6px 12px; font-size:12px; color:var(--accent-green);">Mark Fixed</button>
+                                        <button class="btn btn-danger" onclick="deleteIssueCard('demo-issue-1')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW BLOCK 3: SMART DOCUMENT CLEARANCE DESK WITH CONFIGURABLE PAPERS -->
+            <div id="view-clearance" class="view-section hidden">
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fa-solid fa-file-invoice"></i> Smart Document Desk</h2>
+                    <p style="color:var(--text-muted); margin-bottom: 25px;">File an automated request record for official documentation papers. Receipts show pick-up indicators upon check.</p>
+                    
+                    <!-- Admin Dynamic Selection Form Builder Panel -->
+                    <div id="admin-document-config" class="admin-controls hidden">
+                        <h4 style="color:var(--accent-crimson); margin-bottom:10px;"><i class="fa-solid fa-sliders"></i> Document Selector Form Builder</h4>
+                        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">Modify options or add new certificates residents can choose from:</p>
+                        <div class="form-group" style="display:flex; gap:10px; margin-bottom:0;">
+                            <input type="text" id="new-document-type-input" placeholder="Type document name (e.g., Certificate of Indigency, Barangay Clearance)">
+                            <button class="btn btn-danger" onclick="addNewDocumentSelectionOption()">Add to Selector Options</button>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 30px;">
+                        
+                        <!-- Client Editable Selector Form -->
+                        <div style="background:rgba(0,0,0,0.15); padding:20px; border-radius:12px; border:1px solid var(--glass-border);">
+                            <h3 style="font-size:18px; margin-bottom:15px;">Document Request Intake Form</h3>
+                            
+                            <div class="form-group">
+                                <label>Full Legal Representative Name</label>
+                                <input type="text" id="clearance-name" placeholder="Juan Dela Cruz">
+                            </div>
+                            <div class="form-group">
+                                <label>Age</label>
+                                <input type="number" id="clearance-age" placeholder="24">
+                            </div>
+                            <div class="form-group">
+                                <label>Choose Certificate Paper Type</label>
+                                <select id="clearance-paper-selector">
+                                    <option value="Barangay Clearance Paper">Barangay Clearance Paper</option>
+                                    <option value="Certificate of Residency">Certificate of Residency</option>
+                                    <option value="Barangay Business Permit Entry">Barangay Business Permit Entry</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Verification Purpose Context</label>
+                                <input type="text" id="clearance-purpose" placeholder="e.g. Local Employment Requirement">
+                            </div>
+                            <button class="btn" onclick="generateClearanceTicket()"><i class="fa-solid fa-receipt"></i> Process Transaction Receipt</button>
+                        </div>
+
+                        <!-- Ticket/Receipt Output Box -->
+                        <div id="receipt-container" class="hidden">
+                            <h3 style="font-size:18px; margin-bottom:12px;">Generated Automation Receipt Slip</h3>
+                            <div class="receipt-box">
+                                <div class="receipt-header">
+                                    BARANGAY SALAZA OFFICIAL REGISTRY SYSTEM<br>
+                                    AUTOMATED DISPATCH RECORD RECEIPT
+                                </div>
+                                <p style="margin-bottom:6px;"><strong>REF TICKET ID:</strong> <span id="r-id">SZ-00000</span></p>
+                                <p style="margin-bottom:6px;"><strong>Full Name:</strong> <span id="r-name" contenteditable="false" style="border-bottom:1px dashed #777;">-</span> <small class="adm-edit-note hidden" style="color:var(--accent-crimson)">(Editable)</small></p>
+                                <p style="margin-bottom:6px;"><strong>Age Metric:</strong> <span id="r-age" contenteditable="false" style="border-bottom:1px dashed #777;">-</span> <small class="adm-edit-note hidden" style="color:var(--accent-crimson)">(Editable)</small></p>
+                                <p style="margin-bottom:6px;"><strong>Requested Paper:</strong> <span id="r-paper">-</span></p>
+                                <p style="margin-bottom:12px;"><strong>Intent Purpose:</strong> <span id="r-purpose" contenteditable="false" style="border-bottom:1px dashed #777;">-</span> <small class="adm-edit-note hidden" style="color:var(--accent-crimson)">(Editable)</small></p>
+                                <div style="border-top:2px dashed #0c101b; padding-top:12px; margin-top:10px;">
+                                    <strong>DELIVERY STATUS:</strong> 
+                                    <span id="r-status" style="background:#fbbf24; color:#000; padding:4px 10px; font-weight:bold; border-radius:4px;">UNDER EVALUATION REVIEW</span>
+                                </div>
+                            </div>
+                            
+                            <div id="admin-receipt-controls" class="admin-controls hidden">
+                                <p style="font-weight:bold; color:var(--accent-crimson); margin-bottom:10px;">Admin Actions:</p>
+                                <button class="btn" onclick="markReceiptReady()" style="background:var(--accent-green); color:#000; font-weight:bold;"><i class="fa-solid fa-check"></i> Mark Ready for Pick Up</button>
+                                <button class="btn btn-secondary" onclick="toggleReceiptEditable(true)">Enable Content Override</button>
+                                <button class="btn btn-secondary" onclick="toggleReceiptEditable(false)">Lock Fields</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- REQUEST REGISTRY RECORD TRACKER TABLE SECTION -->
+                    <div style="margin-top: 40px;">
+                        <h3 class="section-title" style="font-size:18px;"><i class="fa-solid fa-table-list"></i> Central Document Master Registry</h3>
+                        <p style="color:var(--text-muted); font-size:14px;">Live tracking breakdown of all generated resident document requests, item statuses, and quick action overrides.</p>
+                        <div class="portal-table-wrapper">
+                            <table class="portal-table">
+                                <thead>
+                                    <tr>
+                                        <th>Ticket Ref</th>
+                                        <th>Requestor Name</th>
+                                        <th>Requested Paper Type</th>
+                                        <th>Current Dispatch Status</th>
+                                        <th class="admin-th-actions hidden">Management</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="document-table-body">
+                                    <!-- Initial Pre-loaded Seed Sample Record Data Row -->
+                                    <tr id="t-row-sz-11024">
+                                        <td style="font-family: monospace; font-weight: bold; color: var(--accent-blue);">SZ-11024</td>
+                                        <td id="t-row-name-sz-11024">Maria Clara</td>
+                                        <td id="t-row-paper-sz-11024">Certificate of Residency</td>
+                                        <td>
+                                            <span id="t-row-badge-sz-11024" class="status-badge status-pending">Review Pending</span>
+                                        </td>
+                                        <td class="admin-td-actions hidden">
+                                            <button class="btn btn-success" style="padding: 6px 10px; font-size: 12px;" onclick="tableMarkDocumentReady('sz-11024')"><i class="fa-solid fa-check"></i> Ready</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW BLOCK 4: EMERGENCY HOTLINES -->
+            <div id="view-hotlines" class="view-section hidden">
+                <section class="glass-card">
+                    <h2 class="section-title" style="border-left-color: var(--accent-crimson);"><i class="fa-solid fa-phone-flip"></i> Emergency Hotlines</h2>
+                    <p style="color:var(--text-muted); margin-bottom:25px;">Instant municipal emergency responder lines. Secured and verified numbers.</p>
+                    
+                    <div class="hotline-grid">
+                        <div class="hotline-item">
+                            <div><strong>Salaza Command Base</strong><br><small style="color:var(--text-muted)">Barangay Desk</small></div>
+                            <span style="color: var(--accent-crimson); font-weight: 700;">(047) 551-9210</span>
+                        </div>
+                        <div class="hotline-item">
+                            <div><strong>Police Hotline</strong><br><small style="color:var(--text-muted)">Precinct Dispatch</small></div>
+                            <span style="color: var(--accent-crimson); font-weight: 700;">911 / 117</span>
+                        </div>
+                        <div class="hotline-item">
+                            <div><strong>Ambulance Hotline</strong><br><small style="color:var(--text-muted)">ER Trauma Response</small></div>
+                            <span style="color: var(--accent-crimson); font-weight: 700;">+63 917 555 0199</span>
+                        </div>
+                        <div class="hotline-item">
+                            <div><strong>BFP Fire Station</strong><br><small style="color:var(--text-muted)">Fire Hazard Rescue</small></div>
+                            <span style="color: var(--accent-crimson); font-weight: 700;">(047) 331-4114</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- VIEW BLOCK 5: OFFICIALS ROSTER & DIRECTORY MANAGEMENT -->
+            <div id="view-officials" class="view-section hidden">
+                <section class="glass-card">
+                    <h2 class="section-title"><i class="fa-solid fa-users-gear"></i> Leadership Council Profiles</h2>
+                    <p style="color:var(--text-muted); margin-bottom:20px;">Current serving barangay leaders directory. (Fully editable via executive administrative authorization logins).</p>
+                    
+                    <div id="admin-officials-panel" class="admin-controls hidden">
+                        <h4 style="color:var(--accent-crimson); margin-bottom:10px;"><i class="fa-solid fa-user-plus"></i> Add New Leader Entry Slot</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                            <input type="text" id="new-off-name" placeholder="Official Name">
+                            <input type="text" id="new-off-role" placeholder="Council Designation">
+                        </div>
+                        <div class="form-group">
+                            <label>Official Portrait Image Link URL</label>
+                            <input type="text" id="new-off-img" placeholder="Paste structural image URL, or leave blank for graphic avatar placeholder">
+                        </div>
+                        <button class="btn btn-danger" onclick="addOfficialCard()">Insert New Profile Entry</button>
+                    </div>
+
+                    <div class="officials-grid" id="officials-directory-container">
+                        <div class="official-member" id="off-member-1">
+                            <img class="official-avatar" src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400" alt="Official Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23090d16\'/><circle cx=\'50\' cy=\'40\' r=\'20\' fill=\'%2338bdf8\' opacity=\'0.3\'/><path d=\'M20,80 Q50,50 80,80\' fill=\'%2338bdf8\' opacity=\'0.3\'/></svg>'">
+                            <div class="official-info">
+                                <div class="official-name" id="off-name-1">Hon. Mateo Salaza</div>
+                                <div class="official-role" id="off-role-1">Barangay Captain</div>
+                            </div>
+                            <div class="admin-controls hidden style-inline-edit" style="margin:15px; padding:5px; border-style:solid;">
+                                <input type="text" id="input-off-name-1" value="Hon. Mateo Salaza" style="padding:4px; font-size:12px; margin-bottom:3px;">
+                                <input type="text" id="input-off-role-1" value="Barangay Captain" style="padding:4px; font-size:12px; margin-bottom:5px;">
+                                <button class="btn" onclick="saveOfficialEdits('1')" style="padding:4px 8px; font-size:11px;">Save</button>
+                                <button class="btn btn-danger" onclick="deleteOfficialElement('off-member-1')" style="padding:4px 8px; font-size:11px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="official-member" id="off-member-2">
+                            <img class="official-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400" alt="Official Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23090d16\'/><circle cx=\'50\' cy=\'40\' r=\'20\' fill=\'%2338bdf8\' opacity=\'0.3\'/><path d=\'M20,80 Q50,50 80,80\' fill=\'%2338bdf8\' opacity=\'0.3\'/></svg>'">
+                            <div class="official-info">
+                                <div class="official-name" id="off-name-2">Maria Santos</div>
+                                <div class="official-role" id="off-role-2">Barangay Secretary</div>
+                            </div>
+                            <div class="admin-controls hidden style-inline-edit" style="margin:15px; padding:5px; border-style:solid;">
+                                <input type="text" id="input-off-name-2" value="Maria Santos" style="padding:4px; font-size:12px; margin-bottom:3px;">
+                                <input type="text" id="input-off-role-2" value="Barangay Secretary" style="padding:4px; font-size:12px; margin-bottom:5px;">
+                                <button class="btn" onclick="saveOfficialEdits('2')" style="padding:4px 8px; font-size:11px;">Save</button>
+                                <button class="btn btn-danger" onclick="deleteOfficialElement('off-member-2')" style="padding:4px 8px; font-size:11px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CORE LOGIC CONTROLLER SYSTEM -->
+    <script>
+        // System Data Storage Structures
+        let databaseAccounts = {
+            "Salaza": "Barangay Salaza" // Standard admin system login
+        };
+        let userIsAdmin = false;
+        let runningIssueCounter = 1;
+        let runningOfficialCounter = 2;
+        let runningVehicleAppointmentCounter = 1;
+
+        // AUTHVIEW CONTROLLER SWITCHER
+        function toggleAuthView(viewName) {
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('signup-card').classList.add('hidden');
+            document.getElementById('forgot-card').classList.add('hidden');
+
+            if (viewName === 'login') document.getElementById('login-card').classList.remove('hidden');
+            if (viewName === 'signup') document.getElementById('signup-card').classList.remove('hidden');
+            if (viewName === 'forgot') document.getElementById('forgot-card').classList.remove('hidden');
+        }
+
+        // ENTRY LOGIN AUTH FUNCTION
+        function attemptLogin() {
+            const userIn = document.getElementById('login-user').value.trim();
+            const passIn = document.getElementById('login-pass').value;
+
+            if (userIn === "Salaza" && passIn === "Barangay Salaza") {
+                userIsAdmin = true;
+                initializeDashboard("System Executive [Admin Override]");
+            } else if (databaseAccounts[userIn] && databaseAccounts[userIn] === passIn) {
+                userIsAdmin = false;
+                initializeDashboard(userIn);
+            } else {
+                alert("Entry Rejected: Unknown credentials matched against current dataset database lines.");
+            }
+        }
+
+        // SIGN UP FUNCTION
+        function processSignup() {
+            const code = document.getElementById('signup-code').value.trim();
+            const pass = document.getElementById('signup-pass').value;
+
+            if (!code || !pass) {
+                alert("Fields cannot remain unpopulated.");
+                return;
+            }
+            databaseAccounts[code] = pass;
+            alert("Resident registry account confirmed! Proceed with login verification.");
+            toggleAuthView('login');
+        }
+
+        // FORGOT ACCOUNT PROCESS
+        function processPasswordReset() {
+            const code = document.getElementById('forgot-code').value.trim();
+            const pass = document.getElementById('forgot-new-pass').value;
+
+            if (databaseAccounts[code]) {
+                databaseAccounts[code] = pass;
+                alert("Credentials updated! Please try logging in with your new password.");
+                toggleAuthView('login');
+            } else {
+                alert("No matching record for the provided resident identifier code found.");
+            }
+        }
+
+        // PANEL SETUP DISPATCH ENGINE
+        function initializeDashboard(userNameLabel) {
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            
+            const badge = document.getElementById('display-user-role');
+            
+            if (userIsAdmin) {
+                badge.innerHTML = `<span class="admin-badge"><i class="fa-solid fa-user-shield"></i> System Admin Slot Active</span>`;
+                
+                // Show all structural admin control spaces
+                document.getElementById('admin-announcement-panel').classList.remove('hidden');
+                document.getElementById('admin-document-config').classList.remove('hidden');
+                document.getElementById('admin-receipt-controls').classList.remove('hidden');
+                document.getElementById('admin-officials-panel').classList.remove('hidden');
+                
+                // Show structural table action columns
+                document.querySelectorAll('.admin-th-actions, .admin-td-actions').forEach(el => el.classList.remove('hidden'));
+
+                // Show inner inline controls across standard modules
+                document.querySelectorAll('.admin-controls').forEach(el => el.classList.remove('hidden'));
+                document.querySelectorAll('.btn-edit-ann').forEach(el => el.classList.remove('hidden'));
+            } else {
+                badge.innerHTML = `<i class="fa-solid fa-user"></i> Resident Profile: <strong>${userNameLabel}</strong>`;
+                
+                // Keep administration structural features completely hidden
+                document.getElementById('admin-announcement-panel').classList.add('hidden');
+                document.getElementById('admin-document-config').classList.add('hidden');
+                document.getElementById('admin-receipt-controls').classList.add('hidden');
+                document.getElementById('admin-officials-panel').classList.add('hidden');
+                
+                // Hide table action columns
+                document.querySelectorAll('.admin-th-actions, .admin-td-actions').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.admin-controls').forEach(el => el.classList.add('hidden'));
+            }
+        }
+
+        function logout() {
+            userIsAdmin = false;
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('auth-modal').classList.remove('hidden');
+            toggleAuthView('login');
+        }
+
+        // DRAWER VIEWS NAV CONTROLLER
+        function switchView(targetSectionId, buttonElement) {
+            // Hide all viewpoint panel blocks
+            document.querySelectorAll('.view-section').forEach(section => section.classList.add('hidden'));
+            // Remove active style from drawer item arrays
+            document.querySelectorAll('.drawer-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Show target view section block
+            document.getElementById(targetSectionId).classList.remove('hidden');
+            buttonElement.classList.add('active');
+            
+            // Update Context Status Text Label
+            document.getElementById('active-view-title').innerText = "MODULE / " + targetSectionId.toUpperCase().replace("-", " ");
+        }
+
+        // BULLETIN APP FUNCTION OBJECTS
+        function postAnnouncement() {
+            const txt = document.getElementById('new-announcement-text').value.trim();
+            if (!txt) return;
+
+            const stream = document.getElementById('announcement-stream');
+            const randId = 'ann-' + Math.floor(Math.random() * 100000);
+            
+            const boxHTML = `
+                <div class="announcement-box" id="${randId}">
+                    <strong>📢 Live Official Notice</strong>
+                    <p style="font-size: 15px; color: var(--text-muted); margin-top: 6px;">${txt}</p>
+                    <button class="btn btn-danger btn-edit-ann" onclick="deleteAnnouncement('${randId}')" style="padding:4px 8px; font-size:11px; margin-top:10px; position:absolute; right:15px; top:5px;"><i class="fa-solid fa-trash"></i> Delete</button>
+                </div>`;
+            
+            stream.innerHTML = boxHTML + stream.innerHTML;
+            document.getElementById('new-announcement-text').value = "";
+            initializeDashboard(); // Refreshes visibility based on current user context
+        }
+
+        function deleteAnnouncement(id) {
+            document.getElementById(id).remove();
+        }
+
+        // BARANGAY VEHICLE APPOINTMENT SCHEDULER CONTROLS
+        function submitVehicleAppointment() {
+            const name = document.getElementById('v-req-name').value.trim();
+            const date = document.getElementById('v-req-date').value;
+            const type = document.getElementById('v-req-type').value;
+            const purpose = document.getElementById('v-req-purpose').value.trim();
+
+            if (!name || !date || !purpose) {
+                alert("Please fill out all booking schedule fields and select a date.");
+                return;
+            }
+
+            runningVehicleAppointmentCounter++;
+            const feed = document.getElementById('vehicle-appointments-feed');
+            const adminVisibility = userIsAdmin ? "" : "hidden";
+
+            const cardHTML = `
+                <div class="issue-card" id="vapp-card-${runningVehicleAppointmentCounter}">
+                    <div class="issue-body">
+                        <span class="status-badge status-pending" id="v-badge-${runningVehicleAppointmentCounter}">Awaiting Fleet Availability Review</span>
+                        <h3>${type}</h3>
+                        <p style="font-size:14px; margin:5px 0;"><i class="fa-solid fa-calendar"></i> <strong>Schedule Target:</strong> ${date}</p>
+                        <p style="font-size:14px; margin-bottom:5px;"><i class="fa-solid fa-user"></i> <strong>Requestor:</strong> ${name}</p>
+                        <p style="font-size:14px; color:var(--text-muted);">Purpose: ${purpose}</p>
+                        
+                        <div class="admin-controls ${adminVisibility}" style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.2); border-style:dashed;">
+                            <label style="color:#fff; font-weight:bold;">Fleet Dispatch Control:</label>
+                            <div style="display:flex; gap:5px; margin-top:8px;">
+                                <button class="btn btn-success" onclick="updateVehicleStatus('vapp-card-${runningVehicleAppointmentCounter}', 'v-badge-${runningVehicleAppointmentCounter}', 'approved')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-circle-check"></i> Approve Fleet</button>
+                                <button class="btn btn-danger" onclick="updateVehicleStatus('vapp-card-${runningVehicleAppointmentCounter}', 'v-badge-${runningVehicleAppointmentCounter}', 'unavailable')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-circle-xmark"></i> Mark Unavailable</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            feed.innerHTML = cardHTML + feed.innerHTML;
+
+            // Clear Input Form
+            document.getElementById('v-req-name').value = "";
+            document.getElementById('v-req-date').value = "";
+            document.getElementById('v-req-purpose').value = "";
+            alert("Vehicle request successfully transmitted to administration desk logs!");
+        }
+
+        function updateVehicleStatus(cardId, badgeId, statusType) {
+            const badge = document.getElementById(badgeId);
+            if (statusType === 'approved') {
+                badge.className = "status-badge status-resolved";
+                badge.innerText = "✓ Request Approved (Vehicle Dispatched)";
+            } else if (statusType === 'unavailable') {
+                badge.className = "status-badge status-unavailable";
+                badge.innerText = "✕ Flagged Unavailable on Target Date";
+            }
+        }
+
+        // ISSUE INCIDENTS TRACKING MODULE INTERACTIVE FUNCTION ENGINE
+        function submitIssue() {
+            const title = document.getElementById('report-title').value.trim();
+            const desc = document.getElementById('report-desc').value.trim();
+            let imgUrl = document.getElementById('report-img-url').value.trim();
+
+            if (!title || !desc) {
+                alert("Please complete both the title and text details parameters.");
+                return;
+            }
+
+            runningIssueCounter++;
+            const stream = document.getElementById('issue-tracker-feed');
+            
+            const mediaHTML = imgUrl ? `<img src="${imgUrl}" class="issue-img" alt="Proof">` : 
+            `<div class="issue-img"><i class="fa-solid fa-cube" style="font-size:50px; opacity:0.25; color:var(--accent-neon);"></i></div>`;
+
+            const adminDisplayContext = userIsAdmin ? "" : "hidden";
+
+            const cardHTML = `
+                <div class="issue-card" id="issue-card-${runningIssueCounter}">
+                    ${mediaHTML}
+                    <div class="issue-body">
+                        <span class="status-badge status-pending" id="status-badge-${runningIssueCounter}">Pending Action</span>
+                        <h3 id="txt-title-${runningIssueCounter}">${title}</h3>
+                        <p id="txt-desc-${runningIssueCounter}" style="font-size: 14px; color: var(--text-muted); margin-top: 6px;">${desc}</p>
+                        
+                        <div id="admin-action-${runningIssueCounter}" class="admin-controls ${adminDisplayContext}" style="margin-top:15px; padding:10px; background:rgba(0,0,0,0.2);">
+                            <label style="color:#fff; font-weight:bold;">Admin Action Controls:</label>
+                            <div class="form-group" style="margin-top:5px;">
+                                <input type="text" id="edit-title-${runningIssueCounter}" value="${title}" style="padding:6px; font-size:13px; margin-bottom:5px;">
+                                <textarea id="edit-desc-${runningIssueCounter}" style="padding:6px; font-size:13px;" rows="2">${desc}</textarea>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <button class="btn" onclick="saveIssueEdits('${runningIssueCounter}')" style="padding:6px 12px; font-size:12px;">Save Edits</button>
+                                <button class="btn btn-secondary" onclick="resolveIssue('status-badge-${runningIssueCounter}', 'admin-action-${runningIssueCounter}')" style="padding:6px 12px; font-size:12px; color:var(--accent-green);">Mark Fixed</button>
+                                <button class="btn btn-danger" onclick="deleteIssueCard('issue-card-${runningIssueCounter}')" style="padding:6px 12px; font-size:12px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            stream.innerHTML = cardHTML + stream.innerHTML;
+            
+            // Clear fields
+            document.getElementById('report-title').value = "";
+            document.getElementById('report-desc').value = "";
+            document.getElementById('report-img-url').value = "";
+        }
+
+        function saveIssueEdits(idNum) {
+            const updatedTitle = document.getElementById(`edit-title-${idNum}`).value;
+            const updatedDesc = document.getElementById(`edit-desc-${idNum}`).value;
+            
+            document.getElementById(`txt-title-${idNum}`).innerText = updatedTitle;
+            document.getElementById(`txt-desc-${idNum}`).innerText = updatedDesc;
+            alert("Issue fields saved successfully.");
+        }
+
+        function resolveIssue(badgeId, controlPanelId) {
+            document.getElementById(badgeId).className = "status-badge status-resolved";
+            document.getElementById(badgeId).innerText = "Resolved / Checked Fixed";
+            document.getElementById(controlPanelId).classList.add('hidden');
+        }
+
+        function deleteIssueCard(cardId) {
+            document.getElementById(cardId).remove();
+        }
+
+        // DOCUMENT REQUEST & SELECTOR BUILDER CONTROLLER
+        function addNewDocumentSelectionOption() {
+            const newDocName = document.getElementById('new-document-type-input').value.trim();
+            if (!newDocName) return;
+
+            const selector = document.getElementById('clearance-paper-selector');
+            const opt = document.createElement('option');
+            opt.value = newDocName;
+            opt.innerHTML = newDocName;
+            selector.appendChild(opt);
+
+            alert(`Successfully added "${newDocName}" choice into document intake dropdown!`);
+            document.getElementById('new-document-type-input').value = "";
+        }
+
+        function generateClearanceTicket() {
+            const cName = document.getElementById('clearance-name').value.trim();
+            const cAge = document.getElementById('clearance-age').value;
+            const cPaper = document.getElementById('clearance-paper-selector').value;
+            const cPurpose = document.getElementById('clearance-purpose').value.trim();
+
+            if (!cName || !cAge || !cPurpose) {
+                alert("Please fill out all applicant identification fields.");
+                return;
+            }
+
+            const cleanIdNum = Math.floor(Math.random() * 90000 + 10000);
+            const ticketId = "SZ-" + cleanIdNum;
+
+            document.getElementById('r-name').innerText = cName;
+            document.getElementById('r-age').innerText = cAge + " Years Old";
+            document.getElementById('r-paper').innerText = cPaper;
+            document.getElementById('r-purpose').innerText = cPurpose;
+            document.getElementById('r-id').innerText = ticketId;
+
+            // Revert state flags back to default processing indicators
+            document.getElementById('r-status').style.background = "#fbbf24";
+            document.getElementById('r-status').style.color = "#000";
+            document.getElementById('r-status').innerText = "UNDER EVALUATION REVIEW";
+
+            document.getElementById('receipt-container').classList.remove('hidden');
+
+            // PIPELINE TO CENTRAL MASTER REGISTRY LOG TABLE
+            appendDocumentToRegistryTable(ticketId, cName, cPaper);
+        }
+
+        function appendDocumentToRegistryTable(idStr, nameStr, paperStr) {
+            const tableBody = document.getElementById('document-table-body');
+            const lowercaseId = idStr.toLowerCase();
+            const adminVisibility = userIsAdmin ? "" : "hidden";
+
+            const rowHTML = `
+                <tr id="t-row-${lowercaseId}">
+                    <td style="font-family: monospace; font-weight: bold; color: var(--accent-blue);">${idStr}</td>
+                    <td id="t-row-name-${lowercaseId}">${nameStr}</td>
+                    <td id="t-row-paper-${lowercaseId}">${paperStr}</td>
+                    <td>
+                        <span id="t-row-badge-${lowercaseId}" class="status-badge status-pending">Review Pending</span>
+                    </td>
+                    <td class="admin-td-actions ${adminVisibility}">
+                        <button class="btn btn-success" style="padding: 6px 10px; font-size: 12px;" onclick="tableMarkDocumentReady('${lowercaseId}')"><i class="fa-solid fa-check"></i> Ready</button>
+                    </td>
+                </tr>`;
+            tableBody.innerHTML = rowHTML + tableBody.innerHTML;
+        }
+
+        function markReceiptReady() {
+            const rStat = document.getElementById('r-status');
+            const currentTicketId = document.getElementById('r-id').innerText.toLowerCase();
+
+            rStat.style.background = "var(--accent-green)";
+            rStat.style.color = "#000";
+            rStat.innerText = "✓ READY FOR PICK UP (VERIFIED)";
+
+            // Update corresponding data inside table
+            tableMarkDocumentReady(currentTicketId);
+        }
+
+        function tableMarkDocumentReady(lowercaseId) {
+            const rowBadge = document.getElementById(`t-row-badge-${lowercaseId}`);
+            if (rowBadge) {
+                rowBadge.className = "status-badge status-resolved";
+                rowBadge.innerText = "Ready to Pick Up";
+            }
+            
+            // If it matches the current active receipt view, change that too
+            const activeReceiptId = document.getElementById('r-id').innerText.toLowerCase();
+            if (activeReceiptId === lowercaseId) {
+                const rStat = document.getElementById('r-status');
+                rStat.style.background = "var(--accent-green)";
+                rStat.style.color = "#000";
+                rStat.innerText = "✓ READY FOR PICK UP (VERIFIED)";
+            }
+        }
+
+        function toggleReceiptEditable(stateValue) {
+            document.getElementById('r-name').contentEditable = stateValue;
+            document.getElementById('r-age').contentEditable = stateValue;
+            document.getElementById('r-purpose').contentEditable = stateValue;
+            
+            const notes = document.querySelectorAll('.adm-edit-note');
+            notes.forEach(note => {
+                if(stateValue) note.classList.remove('hidden');
+                else note.classList.add('hidden');
+            });
+        }
+
+        // OFFICIALS ROSTER MANAGER LOGIC
+        function addOfficialCard() {
+            const offName = document.getElementById('new-off-name').value.trim();
+            const offRole = document.getElementById('new-off-role').value.trim();
+            let offImg = document.getElementById('new-off-img').value.trim();
+
+            if (!offName || !offRole) return;
+            if (!offImg) {
+                // If text string is left blank, dynamically inject an inline 3D stylized placeholder image vector
+                offImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23090d16'/><circle cx='50' cy='40' r='20' fill='%2338bdf8' opacity='0.3'/><path d='M20,80 Q50,50 80,80' fill='%2338bdf8' opacity='0.3'/></svg>";
+            }
+
+            runningOfficialCounter++;
+            const container = document.getElementById('officials-directory-container');
+            const adminVisibility = userIsAdmin ? "" : "hidden";
+
+            const cardHTML = `
+                <div class="official-member" id="off-member-${runningOfficialCounter}">
+                    <img class="official-avatar" src="${offImg}" alt="Official Portrait" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23090d16\'/><circle cx=\'50\' cy=\'40\' r=\'20\' fill=\'%2338bdf8\' opacity=\'0.3\'/><path d=\'M20,80 Q50,50 80,80\' fill=\'%2338bdf8\' opacity=\'0.3\'/></svg>'">
+                    <div class="official-info">
+                        <div class="official-name" id="off-name-${runningOfficialCounter}">${offName}</div>
+                        <div class="official-role" id="off-role-${runningOfficialCounter}">${offRole}</div>
+                    </div>
+                    <div class="admin-controls style-inline-edit ${adminVisibility}" style="margin:15px; padding:5px; border-style:solid;">
+                        <input type="text" id="input-off-name-${runningOfficialCounter}" value="${offName}" style="padding:4px; font-size:12px; margin-bottom:3px;">
+                        <input type="text" id="input-off-role-${runningOfficialCounter}" value="${offRole}" style="padding:4px; font-size:12px; margin-bottom:5px;">
+                        <button class="btn" onclick="saveOfficialEdits('${runningOfficialCounter}')" style="padding:4px 8px; font-size:11px;">Save</button>
+                        <button class="btn btn-danger" onclick="deleteOfficialElement('off-member-${runningOfficialCounter}')" style="padding:4px 8px; font-size:11px;"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+
+            container.innerHTML += cardHTML;
+            
+            // Reset input values
+            document.getElementById('new-off-name').value = "";
+            document.getElementById('new-off-role').value = "";
+            document.getElementById('new-off-img').value = "";
+            initializeDashboard();
+        }
+
+        function saveOfficialEdits(idNum) {
+            const nameVal = document.getElementById(`input-off-name-${idNum}`).value;
+            const roleVal = document.getElementById(`input-off-role-${idNum}`).value;
+            
+            document.getElementById(`off-name-${idNum}`).innerText = nameVal;
+            document.getElementById(`off-role-${idNum}`).innerText = roleVal;
+            alert("Roster member parameters updated locally.");
+        }
+
+        function deleteOfficialElement(elemId) {
+            document.getElementById(elemId).remove();
+        }
+    </script>
+</body>
+</html>
